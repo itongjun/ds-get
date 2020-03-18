@@ -6,15 +6,15 @@ class ViewControllerUtil: UIViewController {
 
         let loadingIndicator = UIActivityIndicatorView(frame: CGRect(x: 10, y: 5, width: 50, height: 50))
         loadingIndicator.hidesWhenStopped = true
-        loadingIndicator.style = UIActivityIndicatorView.Style.gray
+        loadingIndicator.style = traitCollection.userInterfaceStyle == .dark ? .white : .gray
         loadingIndicator.startAnimating()
 
         alert.view.addSubview(loadingIndicator)
         present(alert, animated: true, completion: nil)
     }
 
-    func hideLoading() {
-        DispatchQueue.main.async { self.dismiss(animated: true, completion: nil) }
+    func hideLoading(completion: (() -> Void)? = nil) {
+        DispatchQueue.main.async { self.dismiss(animated: true, completion: completion) }
     }
 
     func showError(title: String, message: String) {
@@ -24,8 +24,7 @@ class ViewControllerUtil: UIViewController {
     }
 
     func errorOut(title: String, message: String) {
-        hideLoading()
-        DispatchQueue.main.async { self.showError(title: title, message: message) }
+        hideLoading(completion: { DispatchQueue.main.async { self.showError(title: title, message: message) }})
     }
 
     override func viewDidAppear(_ animated: Bool) {

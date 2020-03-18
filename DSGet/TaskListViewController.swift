@@ -29,7 +29,7 @@ class TaskListViewController: ViewControllerUtil, UITableViewDataSource, UITable
         addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(add(_:)))
         navigationItem.setRightBarButton(addButton, animated: false)
 
-        view.backgroundColor = UIColor.white
+        view.backgroundColor = Colors.background
         view.addSubview(tableView)
         tableView.snp.makeConstraints { (make) -> Void in
             make.top.equalTo(view.safeAreaLayoutGuide)
@@ -42,7 +42,7 @@ class TaskListViewController: ViewControllerUtil, UITableViewDataSource, UITable
         tableView.register(TaskCell.self, forCellReuseIdentifier: TaskListViewController.reuseIdentifier)
         tableView.insetsContentViewsToSafeArea = true
 
-        refreshControl.tintColor = LoginViewController.background
+        refreshControl.tintColor = Colors.refresh
         refreshControl.addTarget(self, action: #selector(refresh(_:)), for: .valueChanged)
     }
 
@@ -90,13 +90,11 @@ class TaskListViewController: ViewControllerUtil, UITableViewDataSource, UITable
         if editingStyle == .delete {
             showLoading()
             api.deleteTask(taskId: tasks[indexPath.row].taskId) { (success) in
-                self.hideLoading()
-
                 if success {
-                    DispatchQueue.main.async {
+                    self.hideLoading(completion: {
                         self.tasks.remove(at: indexPath.row)
                         tableView.deleteRows(at: [indexPath], with: .automatic)
-                    }
+                    })
                 } else {
                     self.errorOut(title: "Error", message: "Unable to delete task")
                 }
@@ -110,15 +108,15 @@ class TaskListViewController: ViewControllerUtil, UITableViewDataSource, UITable
             self.hideLoading()
 
             if task == nil {
-                self.showError(title: "Error", message: "Unable to load task info")
+                self.errorOut(title: "Error", message: "Unable to load task info")
                 self.hideRow(indexPath)
             } else if task!.files.isEmpty {
-                self.showError(title: "", message: "No file information to show")
+                self.errorOut(title: "", message: "No file information to show")
                 self.hideRow(indexPath)
             } else {
-                DispatchQueue.main.async {
+                self.hideLoading(completion: {
                     self.navigationController?.pushViewController(FileListViewController(api: self.api, task: task!), animated: true)
-                }
+                })
             }
         }
     }
